@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>《认知天性》读书会简明版</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#0F6B5E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="学习读书会">
+<meta name="description" content="用小学五年级就能看懂的话，讲《认知天性》里最有用的想法。可以划线提问，把问题发给作者。">
+<style>
+/* Layout: one chapter per screen, sticky top bar, bottom bar appears when text is selected.
+   No web fonts or CDNs: everything is in this file so it opens fine in China and inside WeChat. */
+:root {
+  --bg: #F3F5F2;
+  --paper: #FFFFFF;
+  --ink: #1E2823;
+  --muted: #5B6A62;
+  --line: #DCE3DE;
+  --accent: #0F6B5E;
+  --accent-soft: #E0EFEB;
+  --mark: #FFE38A;
+  --mark-on: #F5C842;
+  --warn: #B4532A;
+  --font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", system-ui, sans-serif;
+  --font-title: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", "SimSun", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121815; --paper: #1A221E; --ink: #E4ECE7; --muted: #9BADA3; --line: #2C3832;
+    --accent: #6CC7B4; --accent-soft: #1F3530; --mark: #6A5A16; --mark-on: #8C7618; --warn: #E08A62;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 18px/1.85 var(--font); }
+button { font: inherit; color: inherit; }
+.wrap { max-width: 680px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+
+header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top); }
+header .wrap { display: flex; align-items: center; gap: 8px; padding-block: 10px; }
+.brand { flex: 1; min-width: 0; font: 700 1rem/1.3 var(--font-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tbtn { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 6px 14px; font-size: .9rem; cursor: pointer; white-space: nowrap; }
+.tbtn b { color: var(--accent); }
+
+main .wrap { padding-block: 20px 120px; }
+article { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 22px 20px; }
+.kicker { font-size: .85rem; color: var(--muted); margin: 0 0 4px; }
+h1 { font: 700 1.55rem/1.4 var(--font-title); margin: 0 0 18px; }
+h2.lbl { font-size: .9rem; font-weight: 700; color: var(--accent); margin: 22px 0 4px; letter-spacing: .05em; }
+p { margin: 0 0 10px; }
+.one { font: 700 1.2rem/1.7 var(--font-title); }
+ul, ol { margin: 0 0 10px; padding-left: 1.4em; }
+li { margin-bottom: 4px; }
+.example { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; }
+mark.hl { background: var(--mark); color: inherit; border-radius: 3px; padding: 0 1px; cursor: pointer; }
+mark.hl.on { background: var(--mark-on); }
+
+.task { display: flex; gap: 10px; align-items: flex-start; border: 1px dashed var(--line); border-radius: 10px; padding: 12px; cursor: pointer; }
+.task input { width: 22px; height: 22px; margin-top: 5px; accent-color: var(--accent); flex-shrink: 0; }
+
+.check { margin-top: 26px; border-top: 1px solid var(--line); padding-top: 16px; }
+.check p { color: var(--muted); font-size: .95rem; }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.choice { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 6px 16px; cursor: pointer; font-size: .95rem; }
+.choice[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+.hint { font-size: .85rem; color: var(--muted); }
+
+.pager { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
+.pbtn { flex: 1; border: 1px solid var(--line); background: var(--paper); border-radius: 12px; padding: 12px; cursor: pointer; text-align: left; font-size: .95rem; min-width: 0; }
+.pbtn.next { text-align: right; }
+.pbtn small { display: block; color: var(--muted); font-size: .8rem; }
+.pbtn[hidden] { visibility: hidden; display: block; }
+
+.toc a { display: flex; justify-content: space-between; gap: 10px; padding: 12px 4px; border-bottom: 1px solid var(--line); color: inherit; text-decoration: none; }
+.toc a:last-child { border-bottom: 0; }
+.toc .meta { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+
+/* Bottom bar: shows while text is selected, so phone users can ask about it. */
+.selbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; background: var(--ink); color: var(--paper); padding: 12px max(16px, env(safe-area-inset-left)) calc(12px + env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 12px; justify-content: center; }
+.selbar button { background: var(--mark); color: #1E2823; border: 0; border-radius: 999px; padding: 10px 20px; font-weight: 700; cursor: pointer; }
+.fab { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 6; background: var(--accent); color: var(--paper); border: 0; border-radius: 999px; padding: 12px 18px; font-weight: 700; box-shadow: 0 4px 14px rgba(0,0,0,.18); cursor: pointer; }
+
+.sheet-bg { position: fixed; inset: 0; z-index: 10; background: rgba(0,0,0,.4); display: flex; align-items: flex-end; justify-content: center; }
+.sheet { width: 100%; max-width: 680px; max-height: 88vh; overflow: auto; background: var(--paper); border-radius: 16px 16px 0 0; padding: 18px max(16px, env(safe-area-inset-left)) calc(18px + env(safe-area-inset-bottom)); }
+.sheet h3 { margin: 0 0 8px; font: 700 1.15rem/1.4 var(--font-title); }
+.quote { border-left: 3px solid var(--mark-on); padding-left: 10px; color: var(--muted); margin: 0 0 12px; font-size: .95rem; }
+textarea, input[type="text"] { width: 100%; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 10px; padding: 10px; font: inherit; font-size: 1rem; }
+textarea { min-height: 96px; resize: vertical; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: var(--paper); border-radius: 10px; padding: 10px 18px; font-weight: 700; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.danger { background: transparent; border-color: var(--warn); color: var(--warn); }
+.note { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+.note .q { margin: 4px 0 0; }
+.note a { color: var(--accent); font-size: .85rem; }
+.toast { position: fixed; left: 50%; bottom: calc(80px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 8px 16px; border-radius: 999px; font-size: .9rem; z-index: 20; }
+button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.install { display: flex; gap: 10px; align-items: center; background: var(--accent-soft); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; font-size: .9rem; line-height: 1.6; }
+.install span { flex: 1; }
+.install button { border: 0; background: var(--accent); color: var(--paper); border-radius: 999px; padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+/* Tablets (iPad mini is 744px wide in portrait): a little larger text, roomier page, centered dialogs. */
+@media (min-width: 700px) {
+  body { font-size: 19px; }
+  .wrap { max-width: 720px; }
+  article { padding: 32px 36px; }
+  h1 { font-size: 1.75rem; }
+  .sheet-bg { align-items: center; }
+  .sheet { border-radius: 16px; max-width: 600px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">《认知天性》读书会简明版</div>
+    <button class="tbtn" id="tocBtn">目录</button>
+    <button class="tbtn" id="myBtn">我的问题 <b id="myCount">0</b></button>
+  </div>
+</header>
+
+<main><div class="wrap" id="view"></div></main>
+
+<div class="selbar" id="selbar" hidden><span>选中了一段文字</span><button id="askBtn">对这段提问</button></div>
+<button class="fab" id="fab">提个问题</button>
+<div id="sheetRoot"></div>
+
+<script>
+// ---------- settings for whoever publishes this ----------
+const CONFIG = {
+  // Shown on the "我的问题" page so readers know where to send feedback.
+  sendTo: "把复制好的内容发给分享这个链接给你的朋友（微信就可以）。",
+  // Optional: a URL that accepts a JSON POST (for example a form service). Leave empty to use copy/share only.
+  feedbackUrl: "",
+};
+
+// ---------- content (plain-language guide written for this book club; not a translation of the book) ----------
+const INTRO = {
+  id: "intro", title: "怎么用这份讲义",
+  blocks: [
+    { p: "这是一份读书会讲义：用小学五年级就能看懂的话，讲彼得·布朗、亨利·罗迪格、马克·麦克丹尼尔《认知天性》（英文书名 Make It Stick: The Science of Successful Learning）里最有用的想法，每章配一个生活例子和一个这周就能做的小练习。它不是原书的翻译，想读原文的朋友可以找中文版《认知天性》。" },
+    { p: "三位作者里有两位是研究记忆和学习的心理学家。他们发现，很多人用的学习方法，比如一遍遍重读、考前突击，感觉很有用，其实很快就忘。真正能“记牢”的方法，常常让人觉得有点累、有点难。这本书讲的就是这些方法，考证、学手艺、学英语、帮孩子学习都用得上。" },
+    { p: "每章都分四块，读一章大约5分钟：" },
+    { ol: ["一句话：这一章最重要的想法。", "大白话：用简单的话把它讲清楚。", "生活里的例子：放到工作和生活里，它是什么样子。", "这周试一试：一个小练习，做完打个勾。"] },
+    { p: "全书一共8章，建议一周读一章，读完和朋友聊10分钟。读完一章，先合上手机，试着说出这一章讲了什么，这就是在用书里的方法。" },
+    { p: "看不懂的地方，用手指按住文字选中它，点下面的“对这段提问”，写下你的问题。所有问题都在右上角“我的问题”里，可以一键复制发给作者。" },
+  ],
+};
+
+const CHAPTERS = [
+  { n: "第1章", t: "我们对学习的误会",
+    one: "感觉学得很顺的方法，常常记不牢；有点费劲的方法，才记得久。",
+    plain: [{ p: "很多人学习就是把书看一遍、再看一遍，或者考前一晚拼命背。这样做时，内容越看越眼熟，人会觉得“我会了”。可是“眼熟”不等于“记住”，过几天就忘了。作者说，学习时有点吃力，往往说明大脑真正在干活，记得也更久。" }],
+    ex: "考驾照科目一，把题库从头翻到尾三遍，觉得每道题都见过；一上考场，换个说法就不会了。见过不等于会。",
+    task: "想一样你最近学过的东西，不看资料，写下你还记得的三点。写不出来的地方，就是还没学会的。" },
+  { n: "第2章", t: "想学会，就往外“掏”",
+    one: "最好的学习方法之一，是不看答案、自己把东西从脑子里想出来。",
+    plain: [
+      { p: "把知识往脑子里“装”，不如把它从脑子里往外“掏”。合上书，自己回想、自己出题考自己，这叫“提取练习”。每费劲地想起来一次，这段记忆就被加固一次。研究发现，经常做小测验的学生，考试成绩明显更好。" },
+      { p: "小测验不是为了打分，而是为了练“想起来”这个动作。过几天再考一次，效果更好。" },
+    ],
+    ex: "背菜单、背酒店房型、背健身动作要点，与其看十遍，不如看一遍以后，让同事随口考你：“3号套餐里有什么？”答不上来的，再回去看。",
+    task: "把你在学的东西（考证题、单词、菜单）做成5张小卡片，正面问题、背面答案，这周每天自己考自己一次。" },
+  { n: "第3章", t: "隔开练，混着练",
+    one: "把练习隔开几天、把不同的内容混在一起练，比一口气练一样记得更牢。",
+    plain: [
+      { p: "一口气把同一样东西练几十遍，当时感觉很熟，过几天就生疏了。把练习隔开几天，中间忘掉一点再捡回来，反而记得更久。不同的题型、不同的动作混在一起练，也比一样一样分开练效果好，因为你得学会判断“现在该用哪一招”。" },
+      { p: "有个研究：一组孩子一直练往大约1米远的桶里扔沙包，另一组只练比它近一点和远一点的距离，从没练过1米。最后考扔1米远，练近练远的那组反而扔得更准。" },
+    ],
+    ex: "私教给学员安排训练，不是一天只练一个动作练到吐，而是深蹲、俯卧撑、平板支撑轮着来，隔几天再回到同一个动作。",
+    task: "这周把你在学的东西分成三天练，每天只练一小会儿，而且每天把不同的内容混在一起练。" },
+  { n: "第4章", t: "难一点，反而好",
+    one: "让学习“难一点”，比如先猜答案、自己总结，记得反而更牢。",
+    plain: [{ p: "作者把这叫“有益的困难”。比如：先自己想办法解一道题，再看答案，哪怕先想错了也没关系，只要后来改对了。学完以后问自己：今天学了什么？哪里做得好？下次怎么做？这叫“反思”。睡一觉也很重要，大脑会在睡觉时整理白天学的东西。" }],
+    ex: "学一道新菜，与其一步步照着视频做，不如先看一遍，然后关掉视频自己做，做错了再打开看哪一步不对。下次就记住了。",
+    task: "今天睡前花3分钟想一想：今天学到了什么？有什么做错了？明天怎么改？写下一句话。" },
+  { n: "第5章", t: "别被“我会了”骗了",
+    one: "人常常以为自己会了，其实没会，要用测验和别人的反馈来检验。",
+    plain: [{ p: "书看多了、内容眼熟了，人就容易觉得“我会了”。越不会的人，有时越觉得自己会。记忆也会骗人：我们会把听来的、想象的事，记成自己经历过的。所以别只相信自己的感觉，要用测验、用别人的反馈来检查自己到底会不会。" }],
+    ex: "新手骑手觉得自己对这片小区很熟，结果一到晚上找不到楼。让老骑手随口问几个楼号在哪儿，马上就知道哪里还不熟。",
+    task: "找一个人，请他就你在学的东西考你三个问题，看看你的“感觉会”和“真的会”差多少。" },
+  { n: "第6章", t: "别给自己贴“学习类型”的标签",
+    one: "说自己是“看图型”或“听讲型”的人，没有可靠的证据，不如多换方法。",
+    plain: [{ p: "很多人说“我是看图才学得会的人”“我是听了才记得住的人”，觉得只能用一种方式学。作者说，研究没有找到可靠的证据支持这种说法。更有用的是：根据要学的东西来选方法，并且学会抓住重点、找出规律，把新东西和你已经知道的东西连起来。" }],
+    ex: "学修电动车，光看图不够，光听人讲也不够。看一遍图、听师傅讲一遍、自己动手拆一遍，再给别人讲一遍，才真正学会。",
+    task: "挑一样你在学的东西，这周至少用三种方法学：看、听、动手、讲给别人听，选三样。" },
+  { n: "第7章", t: "本事是可以长的",
+    one: "大脑越用越灵，聪明不是定死的，方法对了，谁都能进步。",
+    plain: [{ p: "过去很多人以为聪明是天生的。现在科学家发现，大脑在学习时会长出新的连接，越练越灵。相信“我能学会”的人，更愿意坚持。还有一些记忆小技巧，比如把要记的东西放进一个你很熟的地方：想象从家门口一路走进去，每个地方放一样要记的东西，回想时“走一遍”就想起来了。" }],
+    ex: "要记住第二天送货的五个地址，可以想象它们分别放在你家门口、客厅、厨房、卧室、阳台。回想时在脑子里走一圈，一个个就出来了。",
+    task: "用“在家里走一圈”的办法记五样东西（购物清单、五个单词），第二天看看还记得几样。" },
+  { n: "第8章", t: "怎么让东西记得牢",
+    one: "把前面的方法变成习惯：自测、隔开、混着练、多联系、多反思。",
+    plain: [
+      { p: "最后一章把方法整理成清单，学生、老师、带新人的师傅都能用：" },
+      { ul: ["自己考自己：合上书，把知道的写下来、说出来。", "隔开练：今天学，过两天再复习，过一周再复习。", "混着练：不同内容、不同题型轮着来。", "多联系：用自己的话解释，想想它和你的生活有什么关系。", "先试再学：先自己想办法，再看答案。", "多反思：学完问自己哪里好、哪里不好、下次怎么做。"] },
+    ],
+    ex: "帮孩子复习，不是陪他把课本再读一遍，而是让他当“小老师”，给你讲今天学了什么，你装不懂多问几句。他讲得出来，才是真会了。",
+    task: "从清单里挑两个方法，用在你正在学的一样东西上，这周坚持用三次。" },
+];
+
+const CLUB = {
+  id: "club", title: "读书会怎么开",
+  blocks: [
+    { p: "每周一次，每次30分钟，当面或视频都可以。人不用多，两三个就够。" },
+    { ol: ["先考一考（5分钟）：不看讲义，每人说出上周那一章讲了什么，再聊上周的“试一试”做了没有。", "一起读（10分钟）：轮流读这周这一章。", "聊三个问题（10分钟）：这一章哪句话你最同意？哪句不同意？你以前是怎么学东西的？如果只能用上一个方法，你选哪个？", "定下周的小行动（5分钟）：每个人说出自己这周要用哪个方法学什么。"] },
+    { p: "小提醒：想不起来很正常，想不起来再看，比一直看记得更牢；这不是考试，是朋友一起变好的时间。" },
+  ],
+};
+CHAPTERS.forEach((c, i) => { c.id = "c" + (i + 1); });
+const PAGES = [INTRO, ...CHAPTERS, CLUB];
+const pageIdx = (id) => PAGES.findIndex((p) => p.id === id);
+const pageName = (p) => p.n ? `${p.n}　${p.t}` : p.title;
+
+// ---------- reader data, kept only on this phone ----------
+const KEY = "stick-bookclub-v1";
+let state = { notes: [], tasks: {}, level: {}, name: "", last: "intro" };
+try { state = Object.assign(state, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
+if (!state.reader) state.reader = "r" + Math.random().toString(36).slice(2, 10);
+// With CONFIG.feedbackUrl set, every save is also sent to the organizer (batched a few seconds), so readers don't have to send anything.
+let syncTimer = null;
+function autoSend() {
+  if (!CONFIG.feedbackUrl) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    fetch(CONFIG.feedbackUrl, { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true,
+      body: JSON.stringify({ reader: state.reader, name: state.name, notes: state.notes, level: state.level, tasks: state.tasks, text: feedbackText(), at: new Date().toISOString() }) })
+      .then((r) => { state.sentAt = r.ok ? new Date().toISOString() : state.sentAt; persist(); })
+      .catch(() => {});
+  }, 3000);
+}
+const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+const save = () => { persist(); autoSend(); };
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+let pidSeq = 0;
+const para = (cls, html) => `<p data-pid="${pidSeq++}"${cls ? ` class="${cls}"` : ""}>${html}</p>`;
+function blocksHTML(blocks) {
+  return blocks.map((b) => {
+    if (b.p) return para("", esc(b.p));
+    const tag = b.ol ? "ol" : "ul";
+    return `<${tag}>${(b.ol || b.ul).map((x) => `<li data-pid="${pidSeq++}">${esc(x)}</li>`).join("")}</${tag}>`;
+  }).join("");
+}
+
+// ---------- views ----------
+const LEVELS = ["都看懂了", "有一点难", "很多看不懂"];
+function renderPage(id) {
+  const i = Math.max(0, pageIdx(id));
+  const pg = PAGES[i];
+  state.last = pg.id; persist();
+  pidSeq = 0;
+  let body;
+  if (pg.n) {
+    body = `<p class="kicker">${esc(pg.n)}</p><h1>${esc(pg.t)}</h1>
+      <h2 class="lbl">一句话</h2>${para("one", esc(pg.one))}
+      <h2 class="lbl">大白话</h2>${blocksHTML(pg.plain)}
+      <h2 class="lbl">生活里的例子</h2>${para("example", esc(pg.ex))}
+      <h2 class="lbl">这周试一试</h2>
+      <label class="task"><input type="checkbox" id="taskBox" ${state.tasks[pg.id] ? "checked" : ""}><span data-pid="${pidSeq++}">${esc(pg.task)}</span></label>
+      <div class="check"><p>这一章你看懂了吗？（作者会根据大家的回答改进讲义）</p>
+        <div class="choices">${LEVELS.map((l, k) => `<button class="choice" data-level="${k}" aria-pressed="${state.level[pg.id] === k}">${l}</button>`).join("")}</div>
+        <p class="hint" style="margin-top:10px">哪里看不懂？按住文字选中它，点“对这段提问”。</p>
+      </div>`;
+  } else {
+    body = `<h1>${esc(pg.title)}</h1>${blocksHTML(pg.blocks)}`;
+  }
+  const prev = PAGES[i - 1], next = PAGES[i + 1];
+  $("#view").innerHTML = `<article id="art" data-page="${pg.id}">${body}</article>
+    <div class="pager">
+      <button class="pbtn" id="prevBtn" ${prev ? "" : "hidden"}><small>上一篇</small>${prev ? esc(pageName(prev)) : ""}</button>
+      <button class="pbtn next" id="nextBtn" ${next ? "" : "hidden"}><small>下一篇</small>${next ? esc(pageName(next)) : ""}</button>
+    </div>`;
+  if (prev) $("#prevBtn").onclick = () => go(prev.id);
+  if (next) $("#nextBtn").onclick = () => go(next.id);
+  const tb = $("#taskBox");
+  if (tb) tb.onchange = () => { state.tasks[pg.id] = tb.checked; save(); };
+  document.querySelectorAll("[data-level]").forEach((b) => b.onclick = () => {
+    const k = Number(b.dataset.level);
+    state.level[pg.id] = state.level[pg.id] === k ? undefined : k; save();
+    document.querySelectorAll("[data-level]").forEach((x) => x.setAttribute("aria-pressed", String(state.level[pg.id] === Number(x.dataset.level))));
+    if (k > 0 && state.level[pg.id] === k) toast("谢谢！可以选中看不懂的文字提个问题。");
+  });
+  applyHighlights(pg.id);
+  window.scrollTo(0, 0);
+}
+function renderToc() {
+  $("#view").innerHTML = `<article><h1>目录</h1><nav class="toc">${PAGES.map((p) => {
+    const n = state.notes.filter((x) => x.page === p.id).length;
+    const meta = [state.tasks[p.id] ? "已练习" : "", n ? `${n}个问题` : ""].filter(Boolean).join(" · ");
+    return `<a href="#${p.id}" data-go="${p.id}"><span>${esc(pageName(p))}</span><span class="meta">${meta}</span></a>`;
+  }).join("")}</nav></article>`;
+  window.scrollTo(0, 0);
+}
+// Navigation is driven by the page itself; the #hash is only kept in sync where the browser allows it
+// (some in-app viewers block hash changes, which broke the contents and previous/next buttons).
+let current = (() => { try { return location.hash.slice(1); } catch (e) { return ""; } })() || state.last;
+function go(id) {
+  current = id;
+  route();
+  try { if (location.hash.slice(1) !== id) history.pushState(null, "", "#" + id); } catch (e) {}
+}
+function route() {
+  if (current === "toc") renderToc();
+  else renderPage(pageIdx(current) >= 0 ? current : state.last);
+  $("#myCount").textContent = state.notes.length;
+}
+window.addEventListener("hashchange", () => { const id = location.hash.slice(1); if (id && id !== current) { current = id; route(); } });
+window.addEventListener("popstate", () => { const id = location.hash.slice(1) || state.last; if (id !== current) { current = id; route(); } });
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("[data-go]");
+  if (!a) return;
+  e.preventDefault();
+  closeSheet();
+  go(a.dataset.go);
+});
+$("#tocBtn").onclick = () => go("toc");
+$("#myBtn").onclick = openMine;
+
+// ---------- highlights ----------
+function textNodes(el) {
+  const out = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  while (w.nextNode()) out.push(w.currentNode);
+  return out;
+}
+function wrapText(el, text, noteId) {
+  const nodes = textNodes(el);
+  const full = nodes.map((n) => n.nodeValue).join("");
+  const start = full.indexOf(text);
+  if (start < 0 || !text) return;
+  const end = start + text.length;
+  let pos = 0;
+  nodes.forEach((n) => {
+    const a = pos, b = pos + n.nodeValue.length;
+    pos = b;
+    const s = Math.max(start, a), e = Math.min(end, b);
+    if (s >= e) return;
+    const r = document.createRange();
+    r.setStart(n, s - a); r.setEnd(n, e - a);
+    const m = document.createElement("mark");
+    m.className = "hl"; m.dataset.note = noteId;
+    r.surroundContents(m);
+  });
+}
+function applyHighlights(page) {
+  state.notes.filter((x) => x.page === page).forEach((x) => {
+    const el = document.querySelector(`#art [data-pid="${x.pid}"]`);
+    if (el) wrapText(el, x.text, x.id);
+  });
+}
+document.addEventListener("click", (e) => {
+  const m = e.target.closest("mark.hl");
+  if (m && !hasSelection()) { e.preventDefault(); openNote(state.notes.find((x) => x.id === m.dataset.note)); }
+});
+
+// ---------- selecting text to ask ----------
+let pending = null;
+function hasSelection() { const s = window.getSelection(); return s && !s.isCollapsed && s.toString().trim().length > 0; }
+function readSelection() {
+  const s = window.getSelection();
+  if (!s || s.isCollapsed) return null;
+  const text = s.toString().replace(/\s+/g, " ").trim();
+  if (!text) return null;
+  const node = (n) => (n.nodeType === 1 ? n : n.parentElement);
+  const a = node(s.anchorNode)?.closest("[data-pid]"), b = node(s.focusNode)?.closest("[data-pid]");
+  const art = $("#art");
+  if (!art || !a || !art.contains(a)) return null;
+  // A selection across paragraphs is kept as the part inside the first one.
+  const el = a;
+  const inEl = a === b ? text : (el.textContent.includes(text) ? text : text.slice(0, 60));
+  return { page: art.dataset.page, pid: Number(el.dataset.pid), text: el.textContent.includes(inEl) ? inEl : el.textContent.slice(0, 60) };
+}
+document.addEventListener("selectionchange", () => {
+  const sel = readSelection();
+  pending = sel;
+  $("#selbar").hidden = !sel;
+  $("#fab").hidden = !!sel;
+});
+$("#askBtn").addEventListener("mousedown", (e) => e.preventDefault());
+$("#askBtn").onclick = () => {
+  const sel = pending || readSelection();
+  if (!sel) return;
+  window.getSelection().removeAllRanges();
+  $("#selbar").hidden = true; $("#fab").hidden = false;
+  openNote(null, sel);
+};
+$("#fab").onclick = () => {
+  const art = $("#art");
+  openNote(null, { page: art ? art.dataset.page : "intro", pid: -1, text: "" });
+};
+
+// ---------- sheets ----------
+function sheet(html) {
+  const root = $("#sheetRoot");
+  root.innerHTML = `<div class="sheet-bg" id="sbg"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
+  $("#sbg").addEventListener("click", (e) => { if (e.target.id === "sbg") closeSheet(); });
+  return root;
+}
+function closeSheet() { $("#sheetRoot").innerHTML = ""; }
+function openNote(note, sel) {
+  const isNew = !note;
+  const data = note || { id: "n" + Date.now().toString(36), page: sel.page, pid: sel.pid, text: sel.text, q: "", at: new Date().toISOString() };
+  const pg = PAGES[pageIdx(data.page)];
+  sheet(`<h3>${isNew ? "提一个问题" : "我的问题"}</h3>
+    <p class="hint">${esc(pageName(pg))}</p>
+    ${data.text ? `<p class="quote">${esc(data.text)}</p>` : ""}
+    <textarea id="qBox" placeholder="哪里看不懂？或者你想到了什么？随便写，写一半也行。">${esc(data.q)}</textarea>
+    <div class="row">
+      <button class="btn" id="saveQ">保存</button>
+      <button class="btn ghost" id="cancelQ">取消</button>
+      ${isNew ? "" : `<button class="btn danger" id="delQ">删除</button>`}
+    </div>`);
+  const box = $("#qBox");
+  setTimeout(() => box.focus(), 50);
+  $("#cancelQ").onclick = closeSheet;
+  $("#saveQ").onclick = () => {
+    data.q = box.value.trim();
+    if (!data.q && !data.text) { closeSheet(); return; }
+    if (isNew) state.notes.push(data);
+    save(); closeSheet(); route();
+    toast("已保存。在“我的问题”里可以发给作者。");
+  };
+  if (!isNew) $("#delQ").onclick = () => { state.notes = state.notes.filter((x) => x.id !== data.id); save(); closeSheet(); route(); };
+}
+
+// ---------- my questions + send to the author ----------
+function feedbackText() {
+  const lines = [`《认知天性》读书会简明版 · 读者反馈`, `读者：${state.name || "（没留名字）"}`, ""];
+  PAGES.forEach((p) => {
+    const notes = state.notes.filter((x) => x.page === p.id);
+    const lvl = state.level[p.id];
+    if (!notes.length && lvl === undefined && !state.tasks[p.id]) return;
+    lines.push(`【${pageName(p)}】`);
+    if (lvl !== undefined) lines.push(`看懂了吗：${LEVELS[lvl]}`);
+    if (state.tasks[p.id]) lines.push(`这周试一试：做了`);
+    notes.forEach((x) => {
+      if (x.text) lines.push(`· 划线：「${x.text}」`);
+      lines.push(`  问题：${x.q || "（没写问题）"}`);
+    });
+    lines.push("");
+  });
+  return lines.join("\n").trim();
+}
+function openMine() {
+  const notes = state.notes;
+  sheet(`<h3>我的问题（${notes.length}）</h3>
+    ${notes.length ? notes.map((x) => {
+      const p = PAGES[pageIdx(x.page)];
+      return `<div class="note"><a href="#${x.page}" data-go="${x.page}">${esc(pageName(p))}</a>${x.text ? `<p class="quote" style="margin:4px 0 0">${esc(x.text)}</p>` : ""}<p class="q">${esc(x.q || "（没写问题）")}</p></div>`;
+    }).join("") : `<p class="hint">还没有问题。读的时候按住文字选中，点“对这段提问”。</p>`}
+    <h3 style="margin-top:18px">发给作者</h3>
+    <p class="hint">${CONFIG.feedbackUrl ? "你的问题保存后会自动发给作者，不用再做什么。下面的按钮可以再发一份到微信。" : esc(CONFIG.sendTo)}</p>
+    <input type="text" id="nameBox" placeholder="你的名字或昵称（可以不填）" value="${esc(state.name)}">
+    <div class="row">
+      <button class="btn" id="sendBtn">复制，去微信发送</button>
+      ${navigator.share ? `<button class="btn ghost" id="shareBtn">用其他方式分享</button>` : ""}
+      <button class="btn ghost" id="closeMine">关闭</button>
+    </div>
+    <textarea id="fbText" readonly style="margin-top:12px;min-height:140px" aria-label="要发送的内容"></textarea>
+    <p class="hint">复制不成功的话，可以长按上面的文字全选复制。</p>`);
+  const fb = $("#fbText");
+  const refresh = () => { state.name = $("#nameBox").value.trim(); save(); fb.value = feedbackText(); };
+  refresh();
+  $("#nameBox").oninput = refresh;
+  $("#closeMine").onclick = closeSheet;
+  $("#sendBtn").onclick = async () => {
+    refresh();
+    if (CONFIG.feedbackUrl) {
+      try { await fetch(CONFIG.feedbackUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: state.name, text: fb.value, notes: state.notes, level: state.level, tasks: state.tasks }) }); toast("已发送，谢谢！"); return; } catch (e) {}
+    }
+    if (await copy(fb.value)) toast("已复制，打开微信粘贴发送就行。");
+    else { fb.focus(); fb.select(); toast("请长按文字，选“全选”再复制。"); }
+  };
+  const sb = $("#shareBtn");
+  if (sb) sb.onclick = () => { refresh(); navigator.share({ title: "读书会反馈", text: fb.value }).catch(() => {}); };
+}
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
+  try {
+    const t = document.createElement("textarea");
+    t.value = text; t.setAttribute("readonly", ""); t.style.position = "fixed"; t.style.opacity = "0";
+    document.body.appendChild(t); t.select(); t.setSelectionRange(0, text.length);
+    const ok = document.execCommand("copy"); t.remove(); return ok;
+  } catch (e) { return false; }
+}
+let toastTimer;
+function toast(msg) {
+  let t = $(".toast");
+  if (!t) { t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.textContent = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), 2600);
+}
+
+route();
+
+// ---------- install as a home-screen app ----------
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+(function installHint() {
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  if (standalone || state.hideInstall) return;
+  const ua = navigator.userAgent;
+  let how;
+  if (/MicroMessenger/i.test(ua)) how = "点右上角“⋯”，选“在浏览器打开”，再把它添加到主屏幕。";
+  else if (/iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) how = "点下方的“分享”按钮，选“添加到主屏幕”。";
+  else if (/Android/i.test(ua)) how = "点浏览器菜单“⋮”，选“添加到主屏幕”或“安装应用”。";
+  else return;
+  const bar = document.createElement("div");
+  bar.className = "install";
+  bar.innerHTML = `<span><b>放到手机桌面，像App一样打开：</b>${how}</span><button aria-label="关闭">知道了</button>`;
+  const box = document.createElement("div");
+  box.className = "wrap"; box.style.paddingTop = "16px";
+  box.appendChild(bar);
+  bar.querySelector("button").onclick = () => { state.hideInstall = true; persist(); box.remove(); };
+  document.querySelector("main").prepend(box);
+})();
+</script>
+</body>
+</html>
